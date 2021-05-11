@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "http-proxy-agent": "^4.0.1",
+    "node-fetch": "^2.6.1",
+    "prompt-sync": "^4.2.0"
+  },
+  "name": "india-covid-tracker",
+  "version": "1.0.0",
+  "description": "To track the availability of vaccination centres for covid disease",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vaccine",
+    "vaccination",
+    "covid",
+    "cowin"
+  ],
+  "author": "karanshah",
+  "license": "MIT"
+}
