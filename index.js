@@ -54,19 +54,9 @@ function getCenters(proxy_list, districtID, dateParam, age_limit) {
             if (avlCenters.length === 0)
                 console.log('No available centers at this moment for chosen parameters\n');
             else
-                try {
-                    return transporter.sendMail(mailOptions, (error, info) => {
-                        if (error) {
-                            console.log('Mail error');
-                            console.log(error);
-                            return
-                        } else {
-                            console.log('Mail sent successfully ' + info.messageId);
-                        }
-                    });
-                } catch (error) {
-                    console.log(error);
-                }
+                console.log('A slot has just opened up.');
+            console.log(body);
+            console.log('\n');
             console.log('\n');
         }).catch(err => { console.log(err) });
 }
