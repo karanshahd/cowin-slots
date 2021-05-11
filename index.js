@@ -3,18 +3,10 @@ var HttpProxyAgent = require('http-proxy-agent');
 var prompt = require('prompt-sync')({ sigint: true });
 
 
-function getDateString(dateInput) {
-    if (dateInput === undefined || dateInput === null || dateInput === '') {
-        const todayDate = new Date();
-        const tomorrowDate = new Date();
-        tomorrowDate.setDate(todayDate.getDate() + 1);
-        tomorrowString = tomorrowDate.toLocaleString(undefined, { day: 'numeric', month: 'numeric', year: 'numeric' }).replace(/\//g, '-');
-        return tomorrowString;
-    } else {
-        const tomorrowDate = new Date(dateInput);
-        tomorrowString = tomorrowDate.toLocaleString(undefined, { day: 'numeric', month: 'numeric', year: 'numeric' }).replace(/\//g, '-');
-        return tomorrowString;
-    }
+function getDateString(t) {
+    const todayDate = new Date();
+    todayString = todayDate.toLocaleString(undefined, { day: 'numeric', month: 'numeric', year: 'numeric' }).replace(/\//g, '-');
+    return todayString;
 }
 
 function getProxies() {
@@ -50,14 +42,28 @@ function getCenters(proxy_list, districtID, dateParam, age_limit) {
     fetch('https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=' + districtID + '&date=' + dateParam, options)
         .then(res => res.json())
         .then(body => {
-            avlCenters = body.centers.filter(x => (x.sessions[0].min_age_limit === age_limit) && (x.sessions[0].available_capacity > 0));
-            if (avlCenters.length === 0)
+            avlCenters = body.centers.filter(sess => sess.sessions.filter(slot => (slot.min_age_limit === age_limit) && (slot.available_capacity > 0)).length > 0);
+            if (avlCenters.length === 0) {
+                console.log('\n------------------------------------------------');
                 console.log('No available centers at this moment for chosen parameters\n');
-            else
-                console.log('A slot has just opened up.');
-            console.log(body);
-            console.log('\n');
-            console.log('\n');
+                console.log('------------------------------------------------\n\n');
+            } else {
+                console.log('\n------------------------------------------------');
+                avlCenters.map(center => {
+                    console.log('Hospital name - ' + center.name);
+                    console.log('Hospital address - ' + center.address);
+                    console.log('Hospital pincode - ' + center.pincode);
+                    console.log('\n');
+                    center.sessions.map(session => {
+                        console.log('Date - ' + session.date);
+                        console.log('Remaining Slots - ' + session.available_capacity);
+                        console.log('Vaccine name - ' + session.vaccine);
+                        console.log('\n');
+                    });
+                    console.log('---********---');
+                });
+                console.log('------------------------------------------------\n\n');
+            }
         }).catch(err => { console.log(err) });
 }
 
@@ -86,18 +92,16 @@ async function main() {
         }
     };
 
-
-    var dateChoice = prompt('Enter a date in the format (YYYY/MM/dd) \nPress enter for default');
-    var dateParam = getDateString(dateChoice);
+    var dateParam = getDateString();
 
     const stateResponse = await fetch('https://cdn-api.co-vin.in/api/v2/admin/location/states', options);
     const stateJson = await stateResponse.json();
-    stateJson.states.map((x, index) => console.log(index + " -  " + x.state_name))
+    stateJson.states.map(x => console.log(x.state_id + " -  " + x.state_name))
 
     var stateID = prompt('Enter state number - ');
     console.log('\n');
 
-    while (stateID === null || stateID === undefined || stateID === '' || Number(stateID) < 1 || Number(stateID) > stateJson.states.length) {
+    while (stateID === null || stateID === undefined || stateID === '' || Number(stateID) < 0 || Number(stateID) > stateJson.states.length) {
         stateID = prompt('Enter a valid state number - ');
         console.log('\n');
     }
@@ -110,7 +114,7 @@ async function main() {
 
     var districtChoice = prompt('Enter district number - ');
 
-    while (districtChoice === null || districtChoice === undefined || districtChoice === '' || Number(districtChoice) < 1 || Number(districtChoice) > districtJson.length) {
+    while (districtChoice === null || districtChoice === undefined || districtChoice === '' || Number(districtChoice) < 0 || Number(districtChoice) > districtJson.length) {
         var stateID = prompt('Enter a valid district number - ');
         console.log('\n');
     }
